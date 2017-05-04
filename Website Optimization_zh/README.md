@@ -1,12 +1,6 @@
 ## 网站性能优化项目
 
-你要做的是尽可能优化这个在线项目的速度。注意，请应用你之前在[网站性能优化课程](https://cn.udacity.com/course/website-performance-optimization--ud884/)中学习的技术来优化关键渲染路径并使这个页面尽可能快的渲染。
-
-开始前，请导出这个代码库并检查代码。
-
-### 指南
-
-####Part 1: 优化 index.html 的 PageSpeed Insights 得分
+## 如何开始此应用？
 
 以下是几个帮助你顺利开始本项目的提示：
 
@@ -26,32 +20,55 @@
   $> ./ngrok http 8080
 ```
 
-1. 复制ngrok提供给你的公共URL，然后尝试通过PageSpeed Insights访问它吧！可选阅读：[更多关于整合ngrok、Grunt和PageSpeed的信息](http://www.jamescryer.com/2014/06/12/grunt-pagespeed-and-ngrok-locally-testing/)。
-
-接下来，你可以一遍又一遍的进行配置、优化、检测了！祝你好运！
-
+1. 复制ngrok提供给你的公共URL，或者将此项目部署到tomcat服务器上，通过localhost:8080/你的地址/ 来打开index.html
+2. 打开后，可以点击Build Your Own 2048!、Website Performance Optimization、Mobile Web Development、Cam's Pizzeria这四个网页的详细介绍。并且，在Cam's Pizzeria这个中，可以使用拖动条，来改变pizza的大小。
 ----
 
-####Part 2: 优化 pizza.html 的 FPS（每秒帧数）
 
-你需要编辑 views/js/main.js 来优化 views/pizza.html，直到这个网页的 FPS 达到或超过 60fps。你会在 main.js 中找到一些对此有帮助的注释。
+### 优化概述
 
-你可以在 Chrome 开发者工具帮助中找到关于 FPS 计数器和 HUD 显示的有用信息。[Chrome 开发者工具帮助](https://developer.chrome.com/devtools/docs/tips-and-tricks).
+## index.html的优化
+  在index.html的优化中，我首先使用Chrome安装了PageSpeed插件，并使用该插件对index.html进行测试，根据测试结果对pizza.jpg和pizzria.jpg进行了优化压缩，并且，对于字体进行了优化，使用了异步加载。
 
-### 一些关于优化的提示与诀窍
-* [web 性能优化](https://developers.google.com/web/fundamentals/performance/ "web 性能")
-* [分析关键渲染路径](https://developers.google.com/web/fundamentals/performance/critical-rendering-path/analyzing-crp.html "分析关键渲染路径")
-* [优化关键渲染路径](https://developers.google.com/web/fundamentals/performance/critical-rendering-path/optimizing-critical-rendering-path.html "优化关键渲染路径！")
-* [避免 CSS 渲染阻塞](https://developers.google.com/web/fundamentals/performance/critical-rendering-path/render-blocking-css.html "css渲染阻塞")
-* [优化 JavaScript](https://developers.google.com/web/fundamentals/performance/critical-rendering-path/adding-interactivity-with-javascript.html "javascript")
-* [通过 Navigation Timing 进行检测](https://developers.google.com/web/fundamentals/performance/critical-rendering-path/measure-crp.html "nav timing api")。在前两个课程中我们没有学习 Navigation Timing API，但它对于自动分析页面性能是一个非常有用的工具。我强烈推荐你阅读它。
-* <a href="https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/eliminate-downloads.html">下载量越少，性能越好</a>
-* <a href="https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/optimize-encoding-and-transfer.html">减少文本的大小</a>
-* <a href="https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/image-optimization.html">优化图片</a>
-* <a href="https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/http-caching.html">HTTP缓存</a>
+## pizza.html的优化---修改main.js
+1.首先，使用requestAnimationFrame(updatePositions)，可以优化并行的动画动作，更合理的重新排列动作序列，并把能够合并的动作放在一个渲染周期内完成，从而呈现出更流畅的动画效果；
+2.防止同步布局：
+     1)```
+     for (var i = 0; i < items.length; i++) {
+              phase[i] = Math.sin((document.body.scrollTop / 1250) + (i % 5));
+              items[i].style.left = items[i].basicLeft + 100 * phase[i] + 'px';
+            }
+       ```
+       此处会由于读写都在一个for循环中，因此会导致频繁读写，也就是不停地进行Recalculate Styels 和 layout，因此需要将此处进行批量读取和批量写入，提高性能。
+     2）原来的changePizzaSizes函数中出现了三次document.querySelectorAll(".randomPizzaContainer"),为了不重复这么多的代码，因此将这些DOM节点集合保存到数组中，方便在for循环中调用。其次更影响性能的一点是determineDx，determineDx没有存在的必要，而且这个determineDx函数在变换pizza的尺寸时，会因为在循环中导致同步布局，产生大量的计算布局计算布局情况，因此，将不需要的函数去掉，直接转百分比。
+        ```
+        function changePizzaSizes(size) {
+          switch(size) {
+            case "1":
+              newWidth = 25;
+              break;
+            case "2":
+              newWidth = 33.3;
+              break;
+            case "3":
+              newWidth = 50;
+              break;
+            default:
+              console.log("bug in sizeSwitcher");
+          }
+          var randomPizzas = document.getElementsByClassName("randomPizzaContainer");
+          for (var i = 0; i < randomPizzas.length; i++) {
+            randomPizzas[i].style.width = newWidth + "%";
+          }
+        } 
+        ``` 
+3.使用运行速度更快的选择器，使用getElementById替代querySelector，getElementByClassName代替querySelectorAll
 
-### 使用 Bootstrap 并定制样式
-这个项目基于 Twitter 旗下的 <a href="http://getbootstrap.com/">Bootstrap框架</a> 制作。所有的定制样式都在项目代码库的 `dist/css/portfolio.css` 中。
+## 请联系我
+   对于此项目，您有什么意见和建议欢迎发邮件与我联络，我的邮箱是653982905@qq.com。
+   另外，我再尝试使用
+   ```
+   items[i].style.transform = 'translateX('  + 100  * phase[i] + 'px)' ;
+   ```
+   去代替main.js中的494行，防止reflow的时候，出现一些小问题，如果你对此有什么解决办法，请您不吝赐教。
 
-* <a href="http://getbootstrap.com/css/">Bootstrap CSS</a>
-* <a href="http://getbootstrap.com/components/">Bootstrap组件</a>
