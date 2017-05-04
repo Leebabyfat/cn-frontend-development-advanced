@@ -33,18 +33,19 @@
 ### pizza.html的优化---修改main.js
   -  首先，使用requestAnimationFrame(updatePositions)，可以优化并行的动画动作，更合理的重新排列动作序列，并把能够合并的动作放在一个渲染周期内完成，从而呈现出更流畅的动画效果；
   - 防止同步布局：
+
      1 . 此处会由于读写都在一个for循环中，因此会导致频繁读写，也就是不停地进行Recalculate Styels 和 layout，因此需要将此处进行批量读取和批量写入，提高性能。
-        ```
+        
          for (var i = 0; i < items.length; i++) {
             phase[i] = Math.sin((document.body.scrollTop / 1250) + (i % 5));
             items[i].style.left = items[i].basicLeft + 100 * phase[i] + 'px';
         }
-         ```
+         
       
      2 . 原来的changePizzaSizes函数中出现了三次document.querySelectorAll(".randomPizzaContainer"),为了不重复这么多的代码，因此将这些DOM节点集合保存到数组中，方便在for循环中调用。其次更影响性能的一点是determineDx，determineDx没有存在的必要，而且这个determineDx函数在变换pizza的尺寸时，会因为在循环中导致同步布局，产生大量的计算布局计算布局情况，因此，将不需要的函数去掉，直接转百分比。
         
         
-        function changePizzaSizes(size) {
+          function changePizzaSizes(size) {
           switch(size) {
             case "1":
               newWidth = 25;
@@ -73,4 +74,3 @@
        items[i].style.transform = 'translateX('  + 100  * phase[i] + 'px)' ;
    ```
         去代替main.js中的494行，防止reflow的时候，出现一些小问题，如果你对此有什么解决办法，请您不吝赐教。
-
