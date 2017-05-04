@@ -28,8 +28,7 @@
 ### 优化概述
 
 ### index.html的优化
-       在index.html的优化中，我首先使用Chrome安装了PageSpeed插件，并使用该插件对index.html进行测试，根据测试结果对pizza.jpg和pizzria.jpg进行了优化压缩，并且，对于字体进行了优化，使用了异步加载。
-
+- 在index.html的优化中，我首先使用Chrome安装了PageSpeed插件，并使用该插件对index.html进行测试，根据测试结果对pizza.jpg和pizzria.jpg进行了优化压缩，并且，对于字体进行了优化，使用了异步加载。
 ### pizza.html的优化---修改main.js
   -  首先，使用requestAnimationFrame(updatePositions)，可以优化并行的动画动作，更合理的重新排列动作序列，并把能够合并的动作放在一个渲染周期内完成，从而呈现出更流畅的动画效果；
   - 防止同步布局：
