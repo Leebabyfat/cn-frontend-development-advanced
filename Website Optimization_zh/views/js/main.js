@@ -487,8 +487,10 @@ function updatePositions() {
   var items = document.getElementsByClassName('mover');
   var phase = [];
   //将读操作与写操作分离开，全部读到后，再批量处理，防止同步布局
+  //scrollTop的获取放在循环体外部，就不用每次循环都计算了
+  var currentPosition = document.body.scrollTop;
   for (var i = 0; i < items.length; i++) {
-    phase[i] = Math.sin((document.body.scrollTop / 1250) + (i % 5));
+    phase[i] = Math.sin((currentPosition / 1250) + (i % 5));
   }
   for(var i = 0; i < phase.length; i++) {
     items[i].style.left = items[i].basicLeft + 100 * phase[i] + 'px';
@@ -514,8 +516,10 @@ window.addEventListener('scroll', updatePositions);
 document.addEventListener('DOMContentLoaded', function() {
   var cols = 8;
   var s = 256;
+  //pizza 数量 = (浏览器高度 / s) * cols
+  var PizzaNumber = (window.outerHeight/s) * cols;
   //减少pizza的数量，从而减少生成不必要的pizza
-  for (var i = 0; i < 24; i++) {
+  for (var i = 0; i < PizzaNumber; i++) {
     var elem = document.createElement('img');
     elem.className = 'mover';
     elem.src = "images/pizza.png";
